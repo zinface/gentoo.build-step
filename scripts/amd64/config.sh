@@ -53,6 +53,7 @@ chmod +x 3.${BUILD_EDITOR}-portage-make-conf.sh
 # 3.1.初始化 portage-repos-gentoo.conf 位置
 echo "[config] stage3 仓库: ${BUILD_SYNC_URI}"
 echo "#!/bin/bash"                                  > 3.1.init-portage-repos-gentoo-conf.sh
+echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 3.1.init-portage-repos-gentoo-conf.sh
 echo "mkdir -p ${BUILD_INSTALLDIR}/etc/portage/repos.conf"   >> 3.1.init-portage-repos-gentoo-conf.sh
 echo "cp ${BUILD_INSTALLDIR}/usr/share/portage/config/repos.conf ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf" >> 3.1.init-portage-repos-gentoo-conf.sh
 echo "sed -i 's_rsync://rsync.gentoo.org/gentoo-portage_${BUILD_SYNC_URI}_' ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf"           >> 3.1.init-portage-repos-gentoo-conf.sh

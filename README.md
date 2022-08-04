@@ -8,12 +8,14 @@
             默认是 `systemd`
         - installdir: 配置安装路经\
             默认是 `/mnt/gentoo`
-        
+        - editor: 配置编辑工具\
+            默认是 `/mnt/gentoo`
         ```json
         {
             "arch": "amd64",
             "daemon": "systemd",
-            "installdir": "/mnt/gentoo"
+            "installdir": "/mnt/gentoo",
+            "editor": "vim"
         }
         ```
     2. 执行初始化构建脚本 `init.sh`
@@ -23,4 +25,8 @@
         make
         ```
     3. 初始化完成将获得构建步骤文件
+        - 1. 下载最新 stage3 文件脚本
+        - 2. 解压最新 stage3 文件到安装目录
+        - 3. 利用配置的编辑器编辑 make.conf
+        
 

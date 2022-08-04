@@ -1,5 +1,6 @@
 {
     "arch": "amd64",
     "daemon": "systemd",
-    "installdir": "/mnt/gentoo"
+    "installdir": "/mnt/gentoo",
+    "editor": "vim"
 }

@@ -40,3 +40,12 @@ echo "mkdir -p ${BUILD_INSTALLDIR}"                          >> 2.stage3-amd64-$
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
 echo "tar -xf ${STAGE_NAME} -C ${BUILD_INSTALLDIR}" >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
 chmod +x 2.stage3-amd64-${INIT_TYPE}-extract.sh
+
+
+# 3.获取 stage3 make.conf 编辑脚本 ------------------------------------------------
+    # 用于修改 make.conf 文件
+echo "[config] stage3 编辑: ${BUILD_EDITOR}"
+echo "#!/bin/bash" > 3.${BUILD_EDITOR}-portage-make-conf.sh
+# echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 3.${BUILD_EDITOR}-portage-make-conf.sh
+echo "${BUILD_EDITOR} ${BUILD_INSTALLDIR}/etc/portage/make.conf" >> 3.${BUILD_EDITOR}-portage-make-conf.sh
+chmod +x 3.${BUILD_EDITOR}-portage-make-conf.sh

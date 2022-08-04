@@ -37,5 +37,6 @@ chmod +x 1.latest-stage3-amd64-${INIT_TYPE}.sh
 echo "[config] stage3 install: ${BUILD_INSTALLDIR}"
 echo "#!/bin/bash" > 2.stage3-amd64-${INIT_TYPE}-extract.sh
 echo "mkdir -p ${BUILD_INSTALLDIR}"                          >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
+echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
 echo "tar -xf ${STAGE_NAME} -C ${BUILD_INSTALLDIR}" >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
 chmod +x 2.stage3-amd64-${INIT_TYPE}-extract.sh

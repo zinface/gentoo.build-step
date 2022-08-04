@@ -2,5 +2,6 @@
     "arch": "amd64",
     "daemon": "systemd",
     "installdir": "/mnt/gentoo",
-    "editor": "vim"
+    "editor": "vim",
+    "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage"
 }

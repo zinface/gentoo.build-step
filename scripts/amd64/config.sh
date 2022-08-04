@@ -34,7 +34,7 @@ chmod +x 1.latest-stage3-amd64-${INIT_TYPE}.sh
 
 # 2.获取最新 stage3 解压脚本 ------------------------------------------------
     # 将下载的 stage3 压缩包进行解压，并放入安装目录
-echo "[config] stage3 install: ${BUILD_INSTALLDIR}"
+echo "[config] stage3 安装: ${BUILD_INSTALLDIR}"
 echo "#!/bin/bash" > 2.stage3-amd64-${INIT_TYPE}-extract.sh
 echo "mkdir -p ${BUILD_INSTALLDIR}"                          >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
@@ -50,8 +50,22 @@ echo "#!/bin/bash" > 3.${BUILD_EDITOR}-portage-make-conf.sh
 echo "${BUILD_EDITOR} ${BUILD_INSTALLDIR}/etc/portage/make.conf" >> 3.${BUILD_EDITOR}-portage-make-conf.sh
 chmod +x 3.${BUILD_EDITOR}-portage-make-conf.sh
 
+# 3.1.初始化 portage-repos-gentoo.conf 位置
+echo "[config] stage3 仓库: ${BUILD_SYNC_URI}"
+echo "#!/bin/bash"                                  > 3.1.init-portage-repos-gentoo-conf.sh
+echo "mkdir -p ${BUILD_INSTALLDIR}/etc/portage/repos.conf"   >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "cp ${BUILD_INSTALLDIR}/usr/share/portage/config/repos.conf ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf" >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "sed -i 's_rsync://rsync.gentoo.org/gentoo-portage_${BUILD_SYNC_URI}_' ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf"           >> 3.1.init-portage-repos-gentoo-conf.sh
+echo ""                                                                 >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "# before:"                                                        >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "    # sync-uri = rsync://rsync.gentoo.org/gentoo-portage"         >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "# after:"                                                         >> 3.1.init-portage-repos-gentoo-conf.sh
+echo "    # sync-uri = rsync://mirrors.bfsu.edu.cn/gentoo-portage"      >> 3.1.init-portage-repos-gentoo-conf.sh
+chmod +x 3.1.init-portage-repos-gentoo-conf.sh
+
 
 # 4.获取 stage3 环境迁移脚本
+echo "[config] stage3 环境: chroot-environment-mount"
 echo "#!/bin/bash" >  4.chroot-environment-mount.sh
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 4.chroot-environment-mount.sh
 echo "cp --dereference /etc/resolv.conf ${BUILD_INSTALLDIR}/etc/"      >> 4.chroot-environment-mount.sh
@@ -64,6 +78,7 @@ chmod +x 4.chroot-environment-mount.sh
 
 
 # 5.获取 stage3 环境切换脚本
+echo "[config] stage3 环境: chroot"
 echo "#!/bin/bash" >  5.chroot-rootfs.sh
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 5.chroot-rootfs.sh
 echo "chroot ${BUILD_INSTALLDIR} /bin/bash" >> 5.chroot-rootfs.sh
@@ -71,6 +86,7 @@ chmod +x 5.chroot-rootfs.sh
 
 
 # 5 获取 stage3 环境卸载脚本
+echo "[config] stage3 环境: chroot-environment-umount"
 echo '#!/bin/bash' >  6.chroot-environment-umount.sh
 echo ''                                                                                          >> 6.chroot-environment-umount.sh
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi'                 >> 6.chroot-environment-umount.sh
@@ -89,10 +105,12 @@ chmod +x 6.chroot-environment-umount.sh
 
 
 # 对生成的文件进行垃圾清理操作
+echo "[config] clean  清理: clean.sh"
 echo '#!/bin/bash' > clean.sh
 echo "rm 1.latest-stage3-amd64-${INIT_TYPE}.sh"     >> clean.sh
 echo "rm 2.stage3-amd64-${INIT_TYPE}-extract.sh"    >> clean.sh
 echo "rm 3.${BUILD_EDITOR}-portage-make-conf.sh"    >> clean.sh
+echo "rm 3.1.init-portage-repos-gentoo-conf.sh"     >> clean.sh
 echo "rm 4.chroot-environment-mount.sh"             >> clean.sh
 echo "rm 5.chroot-rootfs.sh"                        >> clean.sh
 echo "rm 6.chroot-environment-umount.sh"            >> clean.sh

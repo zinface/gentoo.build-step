@@ -10,12 +10,14 @@
             默认是 `/mnt/gentoo`
         - editor: 配置编辑工具\
             默认是 `vim`
+        - sync_uri: 配置 portage 默认同步源
         ```json
         {
             "arch": "amd64",
             "daemon": "systemd",
             "installdir": "/mnt/gentoo",
-            "editor": "vim"
+            "editor": "vim",
+            "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage"
         }
         ```
     2. 执行初始化构建脚本 `init.sh`
@@ -28,6 +30,8 @@
         - 1. 下载最新 stage3 文件脚本
         - 2. 解压最新 stage3 文件到安装目录
         - 3. 利用配置的编辑器编辑 make.conf
+            - 3.1 初始化 `etc/portage/repos.conf/gentoo.conf` 文件\
+                并将 `sync-uri` 源配置为 `rsync://mirrors.bfsu.edu.cn/gentoo-portage`
         - 4. 对 stage3 进行环境迁移设置
         - 5. 进入 stage3 的 rootfs
         - 6. 对 stage3 进行环境迁移卸载

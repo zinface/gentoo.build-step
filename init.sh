@@ -28,6 +28,10 @@ read_editor() {
     read_value "editor"
 }
 
+read_sync_uri() {
+    read_value "sync_uri"
+}
+
 # 
 FC_DEFAULT="\033[0m"
 FC_RED="\033[0;31m"
@@ -50,6 +54,7 @@ export BUILD_ARCH=`read_arch`
 export BUILD_DAEMON=`read_daemon`
 export BUILD_INSTALLDIR=`read_installdir`
 export BUILD_EDITOR=`read_editor`
+export BUILD_SYNC_URI=`read_sync_uri`
 
 # 主要环境配置
 
@@ -57,6 +62,7 @@ echo "构建架构: ${BUILD_ARCH}"
 echo "构建类型: ${BUILD_DAEMON}"
 echo "构建目录: ${BUILD_INSTALLDIR}"
 echo "编辑工具: ${BUILD_EDITOR}"
+echo "同步设置: ${BUILD_SYNC_URI}"
 
 echo_info "========== 正在初始化环境 =========="
 

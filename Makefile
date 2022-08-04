@@ -1,0 +1,2 @@
+all:
+	./init.sh

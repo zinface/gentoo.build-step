@@ -75,10 +75,10 @@ echo '#!/bin/bash' >  6.chroot-environment-umount.sh
 echo ''                                                                                          >> 6.chroot-environment-umount.sh
 echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi'                 >> 6.chroot-environment-umount.sh
 echo ''                                                                                          >> 6.chroot-environment-umount.sh
-echo '# grep /gentoo-rootfs/ /proc/mounts | cut -f2 -d" " | sort -r | xargs -r umount -n'        >> 6.chroot-environment-umount.sh
+echo '# grep /${BUILD_INSTALLDIR}/ /proc/mounts | cut -f2 -d" " | sort -r | xargs -r umount -n'  >> 6.chroot-environment-umount.sh
 echo '# 为了解决可能会遇到空的结果将不使用以上命令'                                                     >> 6.chroot-environment-umount.sh
 echo ''                                                                                          >> 6.chroot-environment-umount.sh
-echo 'MOUNTP="/gentoo-rootfs/"'                                                                  >> 6.chroot-environment-umount.sh
+echo "MOUNTP='${BUILD_INSTALLDIR}/'"                                                             >> 6.chroot-environment-umount.sh
 echo 'for dir in $(grep "$MOUNTP" /proc/mounts | cut -f2 -d" " | sort -r)'                       >> 6.chroot-environment-umount.sh
 echo 'do'                                                                                        >> 6.chroot-environment-umount.sh
 echo '    umount $dir 2> /dev/null'                                                              >> 6.chroot-environment-umount.sh

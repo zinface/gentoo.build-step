@@ -9,7 +9,7 @@
         - installdir: 配置安装路经\
             默认是 `/mnt/gentoo`
         - editor: 配置编辑工具\
-            默认是 `/mnt/gentoo`
+            默认是 `vim`
         ```json
         {
             "arch": "amd64",
@@ -28,5 +28,5 @@
         - 1. 下载最新 stage3 文件脚本
         - 2. 解压最新 stage3 文件到安装目录
         - 3. 利用配置的编辑器编辑 make.conf
-        
+
 

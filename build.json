@@ -1,5 +1,5 @@
 {
     "arch": "amd64",
-    "daemon": "openrc",
+    "daemon": "systemd",
     "installdir": "/mnt/gentoo"
 }

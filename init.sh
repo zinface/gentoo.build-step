@@ -32,6 +32,26 @@ read_sync_uri() {
     read_value "sync_uri"
 }
 
+check_jq() {
+    local JQ=$(which jq)
+    if [[ -z "$JQ" ]]; then
+        echo_error "!!! 错误：您未安装 jq 命令，无法解析 build.json"
+        return 1
+    fi
+    echo "[check] 已安装 jq 命令，可以解析 build.json"
+}
+
+check_config() {
+    cat_config | jq -r 2>/dev/null
+    local status=$?
+    if [[ "$status" != 0 ]]; then
+        echo_error "!!! 错误：无法解析 build.json，请检查 build.json 是否完整"
+        return ${status}
+    fi
+    echo "[check] 检查 build.json 通过，可以读取"
+    return 0
+}
+
 # 
 FC_DEFAULT="\033[0m"
 FC_RED="\033[0;31m"
@@ -48,7 +68,13 @@ echo_info() {
 
 echo_info "========== 初始化 gentoo build 仓库 =========="
 
-echo_info "1.读取 build.json 配置文件..."
+echo_info "1.检查是否已安装 jq 命令..."
+check_jq || exit 1
+
+echo_info "2.检查 build.json 是否完整..."
+check_config || exit 1
+
+echo_info "3.读取 build.json 配置文件..."
 
 export BUILD_ARCH=`read_arch`
 export BUILD_DAEMON=`read_daemon`
@@ -58,15 +84,15 @@ export BUILD_SYNC_URI=`read_sync_uri`
 
 # 主要环境配置
 
-echo "构建架构: ${BUILD_ARCH}"
-echo "构建类型: ${BUILD_DAEMON}"
-echo "构建目录: ${BUILD_INSTALLDIR}"
-echo "编辑工具: ${BUILD_EDITOR}"
-echo "同步设置: ${BUILD_SYNC_URI}"
+echo "[build] 构建架构: ${BUILD_ARCH}"
+echo "[build] 构建类型: ${BUILD_DAEMON}"
+echo "[build] 构建目录: ${BUILD_INSTALLDIR}"
+echo "[build] 编辑工具: ${BUILD_EDITOR}"
+echo "[build] 同步设置: ${BUILD_SYNC_URI}"
 
 echo_info "========== 正在初始化环境 =========="
 
-echo_info "2.执行 ./scripts/${BUILD_ARCH}/config.sh 脚本..."
+echo_info "4.执行 ./scripts/${BUILD_ARCH}/config.sh 脚本..."
 
 case "${BUILD_DAEMON}" in 
     systemd|openrc)

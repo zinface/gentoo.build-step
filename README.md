@@ -45,3 +45,24 @@
         - `clean.sh` 对生成的步骤文件进行清理
 
 
+## 提供可选的 steps 
+
+- 提供最小基本系统安装 steps:\
+    文件: `./steps/minimum-basic-system.json`
+    ```
+    将生成最小基本系统 steps
+        ./0.set-make-conf-gentoo-mirrors.sh
+        ./1.emerge-webrsync.sh
+        ./2.emerge-install-bash-completion.sh
+        ./3.emerge-install-ufed.sh
+        ./4.emerge-install-tree.sh
+        ./5.emerge-install-dhcpcd.sh
+        ./6.emerge-install-htop.sh
+        ./7.emerge-install-genfstab.sh
+        ./8.emerge-install-os-prober.sh
+        ./9.emerge-install-grub.sh
+        ./10.emerge-install-gentoo-kernel-bin.sh
+    
+    自动化安装脚本(将以上部分全部集合，并含有预配置与完成交互提示):
+        ./install-minimum-basic-system.sh
+    ```

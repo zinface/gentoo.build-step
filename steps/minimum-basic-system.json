@@ -1,0 +1,127 @@
+[
+    {
+        "file": "0.set-make-conf-gentoo-mirrors.sh",
+        "title": "配置 make.conf 的 GENTOO_MIRRORS",
+        "content": [
+            "GENTOO_MIRRORS='https://mirrors.bfsu.edu.cn/gentoo'",
+            "if [[ \"$(cat /etc/portage/make.conf | grep GENTOO_MIRRORS)\" == \"\" ]]; then ",
+            "    echo GENTOO_MIRRORS=\"${GENTOO_MIRRORS}\" >> /etc/portage/make.conf",
+            "fi"
+        ]
+    },
+    {
+        "file": "1.emerge-webrsync.sh",
+        "title": "同步下载和安装 portage 树的快照版本",
+        "content": [
+            "# 同步下载和安装 Portage 树的快照版本，疾速(依赖于 make.conf 配置的源)",
+            "# 配置 make.conf 的 GENTOO_MIRRORS=\"https://mirrors.bfsu.edu.cn/gentoo\"",
+            "emerge-webrsync"
+        ]
+    },
+    {
+        "file": "2.emerge-install-bash-completion.sh",
+        "title": "安装 bash-completion 软件",
+        "content": [
+            "emerge --ask bash-completion"
+        ]
+    },
+    {
+        "file": "3.emerge-install-ufed.sh",
+        "title": "安装 ufed 软件",
+        "content": [
+            "emerge --ask ufed"
+        ]
+    },
+    {
+        "file": "4.emerge-install-tree.sh",
+        "title": "安装 tree 软件",
+        "content": [
+            "emerge --ask app-text/tree"
+        ]
+    },
+    {
+        "file": "5.emerge-install-dhcpcd.sh",
+        "title": "安装 dhcpcd 软件",
+        "content": [
+            "emerge --ask dhcpcd",
+            "systemctl enable dhcpcd"
+        ]
+    },
+    {
+        "file": "6.emerge-install-htop.sh",
+        "title": "安装 htop 软件",
+        "content": [
+            "emerge --ask htop"
+        ]
+    },
+    {
+        "file": "7.emerge-install-genfstab.sh",
+        "title": "安装 genfstab 软件",
+        "content": [
+            "emerge --ask sys-fs/genfstab"
+        ]
+    },
+    {
+        "file": "8.emerge-install-os-prober.sh",
+        "title": "安装 os-prober 软件",
+        "content": [
+            "emerge --ask sys-boot/os-prober"
+        ]
+    },
+    {
+        "file": "9.emerge-install-grub.sh",
+        "title": "安装 grub 软件",
+        "content": [
+            "emerge --ask grub"
+        ]
+    },
+    {
+        "file": "10.emerge-install-gentoo-kernel-bin.sh",
+        "title": "安装 gentoo-kernel-bin 软件",
+        "content": [
+            "emerge --ask sys-kernel/gentoo-kernel-bin"
+        ]
+    },
+    {
+        "file": "install-minimum-basic-system.sh",
+        "title": "最小基本系统安装 steps 含有预配置与完成交互提示",
+        "content": [
+            "# 最小基本系统安装 step",
+            "# 需要在执行安装过程中, 将进入 bash 提示用户",
+            "",
+            "echo_info '========== 即将进入 bash =========='",
+            "echo_info '请完成预配置 mount 与 /boot 挂载点配置，确定完成后退出 bash 即可继续自动安装'",
+            "echo_info '========= 提示: 进入 bash ========='",
+            "bash",
+            "",
+            "./0.set-make-conf-gentoo-mirrors.sh",
+            "# ./1.emerge-webrsync.sh",
+                "emerge-webrsync",
+            "# ./2.emerge-install-bash-completion.sh",
+                "emerge bash-completion",
+            "# ./3.emerge-install-ufed.sh",
+                "emerge ufed",
+            "# ./4.emerge-install-tree.sh",
+                "emerge app-text/tree",
+            "# ./5.emerge-install-dhcpcd.sh",
+                "emerge dhcpcd",
+                "systemctl enable dhcpcd",
+            "# ./6.emerge-install-htop.sh",
+                "emerge htop",
+            "# ./7.emerge-install-genfstab.sh",
+                "emerge sys-fs/genfstab",
+            "# ./8.emerge-install-os-prober.sh",
+                "emerge sys-boot/os-prober",
+            "# ./9.emerge-install-grub.sh",
+                "emerge grub",
+            "# ./10.emerge-install-gentoo-kernel-bin.sh",
+                "emerge sys-kernel/gentoo-kernel-bin",
+            "",
+            "echo_info '========= 提示: 即将进入 bash =========='",
+            "echo_info '请完成手动配置 grub 安装与 fstab 文件配置(已提供 genfstab)'",
+            "echo_info '========= 提示: 进入 bash ========='",
+                "bash",
+            ""
+        ]
+    }
+]

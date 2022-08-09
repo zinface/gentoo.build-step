@@ -27,93 +27,141 @@ STAGE_VERSION=`echo -n ${STAGE_INFO} | tr '/' ' ' | cut -d ' ' -f1`
 
 echo "[config] stage3 文件: ${STAGE_NAME}"
 echo "[config] stage3 版本: ${STAGE_VERSION}"
-echo "#!/bin/bash" > 1.latest-stage3-amd64-${INIT_TYPE}.sh
-echo "wget https://mirrors.bfsu.edu.cn/gentoo/releases/amd64/autobuilds/current-stage3-amd64-${INIT_TYPE}/${STAGE_NAME}" >> 1.latest-stage3-amd64-${INIT_TYPE}.sh
+cat > 1.latest-stage3-amd64-${INIT_TYPE}.sh << EOF
+#!/bin/bash
+
+wget https://mirrors.bfsu.edu.cn/gentoo/releases/amd64/autobuilds/current-stage3-amd64-${INIT_TYPE}/${STAGE_NAME}
+EOF
 chmod +x 1.latest-stage3-amd64-${INIT_TYPE}.sh
 
 
 # 2.获取最新 stage3 解压脚本 ------------------------------------------------
     # 将下载的 stage3 压缩包进行解压，并放入安装目录
 echo "[config] stage3 安装: ${BUILD_INSTALLDIR}"
-echo "#!/bin/bash" > 2.stage3-amd64-${INIT_TYPE}-extract.sh
-echo "mkdir -p ${BUILD_INSTALLDIR}"                          >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
-echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
-echo "tar -xf ${STAGE_NAME} -C ${BUILD_INSTALLDIR}" >> 2.stage3-amd64-${INIT_TYPE}-extract.sh
+cat > 2.stage3-amd64-${INIT_TYPE}-extract.sh << EOF
+#!/bin/bash
+mkdir -p ${BUILD_INSTALLDIR}
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+tar -xf ${STAGE_NAME} -C ${BUILD_INSTALLDIR}
+EOF
 chmod +x 2.stage3-amd64-${INIT_TYPE}-extract.sh
 
 
 # 3.获取 stage3 make.conf 编辑脚本 ------------------------------------------------
     # 用于修改 make.conf 文件
 echo "[config] stage3 编辑: ${BUILD_EDITOR}"
-echo "#!/bin/bash" > 3.${BUILD_EDITOR}-portage-make-conf.sh
-# echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 3.${BUILD_EDITOR}-portage-make-conf.sh
-echo "${BUILD_EDITOR} ${BUILD_INSTALLDIR}/etc/portage/make.conf" >> 3.${BUILD_EDITOR}-portage-make-conf.sh
+cat > 3.${BUILD_EDITOR}-portage-make-conf.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+${BUILD_EDITOR} ${BUILD_INSTALLDIR}/etc/portage/make.conf
+EOF
 chmod +x 3.${BUILD_EDITOR}-portage-make-conf.sh
+
 
 # 3.1.初始化 portage-repos-gentoo.conf 位置
 echo "[config] stage3 仓库: ${BUILD_SYNC_URI}"
-echo "#!/bin/bash"                                  > 3.1.init-portage-repos-gentoo-conf.sh
-echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "mkdir -p ${BUILD_INSTALLDIR}/etc/portage/repos.conf"   >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "cp ${BUILD_INSTALLDIR}/usr/share/portage/config/repos.conf ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf" >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "sed -i 's_rsync://rsync.gentoo.org/gentoo-portage_${BUILD_SYNC_URI}_' ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf"           >> 3.1.init-portage-repos-gentoo-conf.sh
-echo ""                                                                 >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "# before:"                                                        >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "    # sync-uri = rsync://rsync.gentoo.org/gentoo-portage"         >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "# after:"                                                         >> 3.1.init-portage-repos-gentoo-conf.sh
-echo "    # sync-uri = rsync://mirrors.bfsu.edu.cn/gentoo-portage"      >> 3.1.init-portage-repos-gentoo-conf.sh
+cat > 3.1.init-portage-repos-gentoo-conf.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+mkdir -p ${BUILD_INSTALLDIR}/etc/portage/repos.conf
+cp ${BUILD_INSTALLDIR}/usr/share/portage/config/repos.conf ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf
+sed -i 's_rsync://rsync.gentoo.org/gentoo-portage_${BUILD_SYNC_URI}_' ${BUILD_INSTALLDIR}/etc/portage/repos.conf/gentoo.conf
+
+# before:
+    # sync-uri = rsync://rsync.gentoo.org/gentoo-portage
+# after:
+    # sync-uri = rsync://mirrors.bfsu.edu.cn/gentoo-portage
+EOF
 chmod +x 3.1.init-portage-repos-gentoo-conf.sh
 
 
 # 4.获取 stage3 环境迁移脚本
 echo "[config] stage3 环境: chroot-environment-mount"
-echo "#!/bin/bash" >  4.chroot-environment-mount.sh
-echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 4.chroot-environment-mount.sh
-echo "cp --dereference /etc/resolv.conf ${BUILD_INSTALLDIR}/etc/"      >> 4.chroot-environment-mount.sh
-echo "mount -t proc /proc ${BUILD_INSTALLDIR}/proc"                    >> 4.chroot-environment-mount.sh
-echo "mount --rbind /sys ${BUILD_INSTALLDIR}/sys"                      >> 4.chroot-environment-mount.sh
-echo "mount --make-rslave ${BUILD_INSTALLDIR}/sys"                     >> 4.chroot-environment-mount.sh
-echo "mount --rbind /dev ${BUILD_INSTALLDIR}/dev"                      >> 4.chroot-environment-mount.sh
-echo "mount --make-rslave ${BUILD_INSTALLDIR}/dev"                     >> 4.chroot-environment-mount.sh
+cat > 4.chroot-environment-mount.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+cp --dereference /etc/resolv.conf ${BUILD_INSTALLDIR}/etc/
+mount -t proc /proc ${BUILD_INSTALLDIR}/proc
+mount --rbind /sys ${BUILD_INSTALLDIR}/sys
+mount --make-rslave ${BUILD_INSTALLDIR}/sys
+mount --rbind /dev ${BUILD_INSTALLDIR}/dev
+mount --make-rslave ${BUILD_INSTALLDIR}/dev
+EOF
 chmod +x 4.chroot-environment-mount.sh
 
 
 # 5.获取 stage3 环境切换脚本
 echo "[config] stage3 环境: chroot"
-echo "#!/bin/bash" >  5.chroot-rootfs.sh
-echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi' >> 5.chroot-rootfs.sh
-echo "chroot ${BUILD_INSTALLDIR} /bin/bash" >> 5.chroot-rootfs.sh
+cat > 5.chroot-rootfs.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+chroot ${BUILD_INSTALLDIR} /bin/bash
+EOF
 chmod +x 5.chroot-rootfs.sh
 
 
 # 5 获取 stage3 环境卸载脚本
 echo "[config] stage3 环境: chroot-environment-umount"
-echo '#!/bin/bash' >  6.chroot-environment-umount.sh
-echo ''                                                                                          >> 6.chroot-environment-umount.sh
-echo 'if [[ `id -un` != "root" ]]; then echo "请使用 sudo 执行此脚本" ; exit 1; fi'                 >> 6.chroot-environment-umount.sh
-echo ''                                                                                          >> 6.chroot-environment-umount.sh
-echo '# grep /${BUILD_INSTALLDIR}/ /proc/mounts | cut -f2 -d" " | sort -r | xargs -r umount -n'  >> 6.chroot-environment-umount.sh
-echo '# 为了解决可能会遇到空的结果将不使用以上命令'                                                     >> 6.chroot-environment-umount.sh
-echo ''                                                                                          >> 6.chroot-environment-umount.sh
-echo "MOUNTP='${BUILD_INSTALLDIR}/'"                                                             >> 6.chroot-environment-umount.sh
-echo 'for dir in $(grep "$MOUNTP" /proc/mounts | cut -f2 -d" " | sort -r)'                       >> 6.chroot-environment-umount.sh
-echo 'do'                                                                                        >> 6.chroot-environment-umount.sh
-echo '    umount $dir 2> /dev/null'                                                              >> 6.chroot-environment-umount.sh
-echo '    (( $? )) && umount -n $dir'                                                            >> 6.chroot-environment-umount.sh
-echo 'done'                                                                                      >> 6.chroot-environment-umount.sh
+cat > 6.chroot-environment-umount.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+# grep /${BUILD_INSTALLDIR}/ /proc/mounts | cut -f2 -d" " | sort -r | xargs -r umount -n
+# 为了解决可能会遇到空的结果将不使用以上命令
+
+MOUNTP='${BUILD_INSTALLDIR}/'
+for dir in \$(grep "\$MOUNTP" /proc/mounts | cut -f2 -d" " | sort -r)
+do
+    umount \$dir 2> /dev/null
+    (( \$? )) && umount -n \$dir
+done
+EOF
 chmod +x 6.chroot-environment-umount.sh
 
 
 
 # 对生成的文件进行垃圾清理操作
 echo "[config] clean  清理: clean.sh"
-echo '#!/bin/bash' > clean.sh
-echo "rm 1.latest-stage3-amd64-${INIT_TYPE}.sh"     >> clean.sh
-echo "rm 2.stage3-amd64-${INIT_TYPE}-extract.sh"    >> clean.sh
-echo "rm 3.${BUILD_EDITOR}-portage-make-conf.sh"    >> clean.sh
-echo "rm 3.1.init-portage-repos-gentoo-conf.sh"     >> clean.sh
-echo "rm 4.chroot-environment-mount.sh"             >> clean.sh
-echo "rm 5.chroot-rootfs.sh"                        >> clean.sh
-echo "rm 6.chroot-environment-umount.sh"            >> clean.sh
-echo "rm clean.sh"                                  >> clean.sh
+
+cat > clean.sh << EOF
+#!/bin/bash
+
+rm 1.latest-stage3-amd64-${INIT_TYPE}.sh
+rm 2.stage3-amd64-${INIT_TYPE}-extract.sh
+rm 3.${BUILD_EDITOR}-portage-make-conf.sh
+rm 3.1.init-portage-repos-gentoo-conf.sh
+rm 4.chroot-environment-mount.sh
+rm 5.chroot-rootfs.sh
+rm 6.chroot-environment-umount.sh
+rm clean.sh
+EOF
 chmod +x clean.sh

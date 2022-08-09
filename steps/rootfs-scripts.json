@@ -1,0 +1,30 @@
+[
+    {
+        "file": "0.set-make-conf-gentoo-mirrors.sh",
+        "title": "配置 make.conf 的 GENTOO_MIRRORS",
+        "content": [
+            "GENTOO_MIRRORS='https://mirrors.bfsu.edu.cn/gentoo'",
+            "if [[ \"$(cat /etc/portage/make.conf | grep GENTOO_MIRRORS)\" == \"\" ]]; then ",
+            "    echo GENTOO_MIRRORS=\"${GENTOO_MIRRORS}\" >> /etc/portage/make.conf",
+            "fi"
+        ]
+    },
+    {
+        "file": "1.emerge-sync.sh",
+        "title": "全量同步仓库源信息，获取完整 portage 树(可能比较慢)",
+        "content": [
+            "# 遵照 sync-type 与 sync-uri 属性的指示(/etc/portage/repos.conf)，更新本地 portage 树",
+            "# 同步整个源信息(仅需一次，全量，慢死人)",
+            "emerge --sync"
+        ]
+    },
+    {
+        "file": "2.emerge-webrsync.sh",
+        "title": "同步下载和安装 portage 树的快照版本",
+        "content": [
+            "# 同步下载和安装 Portage 树的快照版本，疾速(依赖于 make.conf 配置的源)",
+            "# 配置 make.conf 的 GENTOO_MIRRORS=\"https://mirrors.bfsu.edu.cn/gentoo\"",
+            "emerge-webrsync"
+        ]
+    }
+]

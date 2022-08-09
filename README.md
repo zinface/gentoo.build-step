@@ -10,31 +10,38 @@
             默认是 `/mnt/gentoo`
         - editor: 配置编辑工具\
             默认是 `vim`
-        - sync_uri: 配置 portage 默认同步源
+        - sync_uri: 配置 portage 默认同步源\
+            默认是 `rsync://mirrors.bfsu.edu.cn/gentoo-portage`
+        - step_jsons: 用于描述生成的step的脚本配置(脚本可在进入rootfs后使用)\
+            默认提供的 steps:`./steps/rootfs-scripts.json`
         ```json
         {
             "arch": "amd64",
             "daemon": "systemd",
             "installdir": "/mnt/gentoo",
             "editor": "vim",
-            "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage"
+            "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage",
+            "step_jsons": [
+                "./steps/rootfs-scripts.json"
+            ]
         }
         ```
     2. 执行初始化构建脚本 `init.sh`
         ```bash
         $ ./init.sh
         # or
-        make
+        $ make
         ```
     3. 初始化完成将获得构建步骤文件
-        - 1. 下载最新 stage3 文件脚本
-        - 2. 解压最新 stage3 文件到安装目录
-        - 3. 利用配置的编辑器编辑 make.conf
+        1. 下载最新 stage3 文件脚本
+        2. 解压最新 stage3 文件到安装目录
+        3. 将已生成的'steps脚本'复制到 `<installdir>/root` 位置(请在进入chroot后使用)
+            - 3.0 利用配置的编辑器编辑 make.conf (可选, 或由step脚本进行自动配置)
             - 3.1 初始化 `etc/portage/repos.conf/gentoo.conf` 文件\
                 并将 `sync-uri` 源配置为 `rsync://mirrors.bfsu.edu.cn/gentoo-portage`
-        - 4. 对 stage3 进行环境迁移设置
-        - 5. 进入 stage3 的 rootfs
-        - 6. 对 stage3 进行环境迁移卸载
+        4. 对 stage3 进行环境迁移设置
+        5. 进入 stage3 的 rootfs
+        6. 对 stage3 进行环境迁移卸载
         - `clean.sh` 对生成的步骤文件进行清理
 
 

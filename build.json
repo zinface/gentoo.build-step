@@ -3,5 +3,8 @@
     "daemon": "systemd",
     "installdir": "/mnt/gentoo",
     "editor": "vim",
-    "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage"
+    "sync_uri": "rsync://mirrors.bfsu.edu.cn/gentoo-portage",
+    "step_jsons": [
+        "./steps/rootfs-scripts.json"
+    ]
 }

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# 
+FC_DEFAULT="\033[0m"
+FC_RED="\033[0;31m"
+FC_GREEN="\033[0;32m"
+# 
+
+echo_error() {
+    echo -e "${FC_RED}${@}${FC_DEFAULT}"
+}
+
+echo_info() {
+    echo -e "${FC_GREEN}${@}${FC_DEFAULT}"
+}
+
+# 主要说明
+echo_info "${0}: 模板文件"
+
+# 主要内容

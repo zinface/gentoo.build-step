@@ -42,7 +42,7 @@ check_jq() {
 }
 
 check_config() {
-    cat_config | jq -r 2>/dev/null
+    cat_config | jq '.arch' -r 1>/dev/null
     local status=$?
     if [[ "$status" != 0 ]]; then
         echo_error "!!! 错误：无法解析 build.json，请检查 build.json 是否完整"
@@ -109,7 +109,44 @@ case "${BUILD_DAEMON}" in
         ;; 
 esac
 
-echo_info "========== 环境初始化完成 =========="
 
+echo_info "========== 正在初始化 step-jsons =========="
+echo_info "5.读取 build.json 内容的 step-jsons 配置"
+
+step_jsons_length() {
+    read_value 'step_jsons | length'
+}
+
+step_jsons_read_index() {
+    local index=$1
+    local key=$2
+    read_value "step_jsons[${index}]${key}" 
+}
+
+step_jsons_read_line() {
+    local index=$1
+    step_jsons_read_index "${index}" ""
+}
+
+step_jsons_loader() {
+    local STEP_JSON=$1
+    export STEP_JSON
+    ./steps/generate-steps.sh
+}
+
+echo "[step-jsons] 数量: $(step_jsons_length)"
+
+# 此处的 i 从 1 开始，但 index 应从 0 开始
+for i in `seq $(step_jsons_length)`; do
+    index=$(echo ${i}-1|bc)
+
+    # 如果 step_json 里的文件存在
+    if [[ -f "$(step_jsons_read_line ${index})" ]]; then
+        echo "  [读取]: $(step_jsons_read_line ${index})"
+        step_jsons_loader $(realpath "$(step_jsons_read_line ${index})")
+    fi
+done
+
+echo_info "========== 初始化 step-jsons 完成 =========="
 
 # 次要环境配置

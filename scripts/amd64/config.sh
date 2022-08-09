@@ -52,10 +52,26 @@ EOF
 chmod +x 2.stage3-amd64-${INIT_TYPE}-extract.sh
 
 
-# 3.获取 stage3 make.conf 编辑脚本 ------------------------------------------------
+# 3. 将已生成的通用脚本复制到 <rootfs>/root ------------------------------------------
+echo "[config] stage3 steps: ${BUILD_INSTALLDIR}/root/*.sh"
+cat > 3.steps-copy-to-root.sh << EOF
+#!/bin/bash
+
+if [[ \`id -un\` != "root" ]]; then 
+    echo "请使用 sudo 执行此脚本"
+    exit 1
+fi
+
+export BUILD_INSTALLDIR='${BUILD_INSTALLDIR}'
+./steps/config-steps.sh
+EOF
+chmod +x 3.steps-copy-to-root.sh
+
+
+# 3.0.获取 stage3 make.conf 编辑脚本 ------------------------------------------------
     # 用于修改 make.conf 文件
 echo "[config] stage3 编辑: ${BUILD_EDITOR}"
-cat > 3.${BUILD_EDITOR}-portage-make-conf.sh << EOF
+cat > 3.0.${BUILD_EDITOR}-portage-make-conf.sh << EOF
 #!/bin/bash
 
 if [[ \`id -un\` != "root" ]]; then 
@@ -65,10 +81,10 @@ fi
 
 ${BUILD_EDITOR} ${BUILD_INSTALLDIR}/etc/portage/make.conf
 EOF
-chmod +x 3.${BUILD_EDITOR}-portage-make-conf.sh
+chmod +x 3.0.${BUILD_EDITOR}-portage-make-conf.sh
 
 
-# 3.1.初始化 portage-repos-gentoo.conf 位置
+# 3.1.初始化 portage-repos-gentoo.conf 位置 ------------------------------------------------
 echo "[config] stage3 仓库: ${BUILD_SYNC_URI}"
 cat > 3.1.init-portage-repos-gentoo-conf.sh << EOF
 #!/bin/bash
@@ -90,7 +106,7 @@ EOF
 chmod +x 3.1.init-portage-repos-gentoo-conf.sh
 
 
-# 4.获取 stage3 环境迁移脚本
+# 4.获取 stage3 环境迁移脚本 ------------------------------------------------
 echo "[config] stage3 环境: chroot-environment-mount"
 cat > 4.chroot-environment-mount.sh << EOF
 #!/bin/bash
@@ -110,7 +126,7 @@ EOF
 chmod +x 4.chroot-environment-mount.sh
 
 
-# 5.获取 stage3 环境切换脚本
+# 5.获取 stage3 环境切换脚本 ------------------------------------------------
 echo "[config] stage3 环境: chroot"
 cat > 5.chroot-rootfs.sh << EOF
 #!/bin/bash
@@ -125,7 +141,7 @@ EOF
 chmod +x 5.chroot-rootfs.sh
 
 
-# 5 获取 stage3 环境卸载脚本
+# 5 获取 stage3 环境卸载脚本 ------------------------------------------------
 echo "[config] stage3 环境: chroot-environment-umount"
 cat > 6.chroot-environment-umount.sh << EOF
 #!/bin/bash
@@ -149,15 +165,15 @@ chmod +x 6.chroot-environment-umount.sh
 
 
 
-# 对生成的文件进行垃圾清理操作
+# 对生成的文件进行垃圾清理操作 ------------------------------------------------
 echo "[config] clean  清理: clean.sh"
-
 cat > clean.sh << EOF
 #!/bin/bash
 
 rm 1.latest-stage3-amd64-${INIT_TYPE}.sh
 rm 2.stage3-amd64-${INIT_TYPE}-extract.sh
-rm 3.${BUILD_EDITOR}-portage-make-conf.sh
+rm 3.steps-copy-to-root.sh
+rm 3.0.${BUILD_EDITOR}-portage-make-conf.sh
 rm 3.1.init-portage-repos-gentoo-conf.sh
 rm 4.chroot-environment-mount.sh
 rm 5.chroot-rootfs.sh

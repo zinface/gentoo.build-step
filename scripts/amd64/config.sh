@@ -122,6 +122,8 @@ mount --rbind /sys ${BUILD_INSTALLDIR}/sys
 mount --make-rslave ${BUILD_INSTALLDIR}/sys
 mount --rbind /dev ${BUILD_INSTALLDIR}/dev
 mount --make-rslave ${BUILD_INSTALLDIR}/dev
+mount --bind /run ${BUILD_INSTALLDIR}/run
+mount --make-slave ${BUILD_INSTALLDIR}/run
 EOF
 chmod +x 4.chroot-environment-mount.sh
 

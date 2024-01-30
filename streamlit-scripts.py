@@ -2,11 +2,162 @@ import streamlit as st
 import json
 import os
 import zipfile
+import gzip
 import io
+import requests
+import re
+import xml
+
+def _max_width_(prcnt_width:int = 75):
+    max_width_str = f"max-width: {prcnt_width}rem;"
+    st.markdown(f""" 
+                <style> 
+                .block-container{{{max_width_str}}}
+                </style>    
+                """, 
+                unsafe_allow_html=True,
+    )
+_max_width_(80)
 
 def intro():
     st.title('欢迎使用可视化工具')
 
+    # workdir = 'scripts'
+    # archs = ['amd64', 'arm64', 'ppc64le', 's390x', 'x86_64']
+    
+def portage_viewer():
+    st.title('portage 可视化工具')
+    
+    prefix_mirrors = [
+        'https://mirrors.bfsu.edu.cn/gentoo-portage'
+    ]
+    
+    prefix_mirror = st.sidebar.selectbox('选择源', options=prefix_mirrors)
+    Manifestfiles = os.path.join(prefix_mirror, 'Manifest.files.gz')
+    # requests.get(Manifestfiles).content
+    manifest_pattern = re.compile(r'MANIFEST ((\S+)/(\S+))')
+    ebuid_pattern = re.compile(r'EBUILD ((\S+))')
+    # Manifests = []
+    prefix_packages = []
+    gzip_file = io.BytesIO(requests.get(Manifestfiles).content)
+    with gzip.GzipFile(fileobj=gzip_file, mode='r') as gzip_ref:
+        # zip_ref.extractall(os.path.join(prefix, 'portage'))
+        for line in gzip_ref.readlines():
+            line = line.decode(errors='ignore')
+            if line.startswith('MANIFEST'):
+                if m := manifest_pattern.match(line):
+                    prefix_packages.append(m.group(2))
+    
+    prefix_package = st.selectbox('选择前缀', options=prefix_packages)
+    prefix_package_manifest = os.path.join(prefix_mirror, prefix_package, 'Manifest.gz')
+    gzip_file = io.BytesIO(requests.get(prefix_package_manifest).content)
+    suffix_packages = []
+    with gzip.GzipFile(fileobj=gzip_file, mode='r') as gzip_ref:
+        for line in gzip_ref.readlines():
+            line = line.decode(errors='ignore')
+            if line.startswith('MANIFEST'):
+                if m := manifest_pattern.match(line):
+                    suffix_packages.append(m.group(2))
+                
+    suffix_package = st.selectbox('选择后缀', options=suffix_packages)
+    package_prefix = os.path.join(prefix_mirror, prefix_package, suffix_package)
+    
+    package_manifest = os.path.join(package_prefix, 'Manifest')
+    manifest = requests.get(package_manifest).content.decode(errors='ignore')
+    package_ebuilds = []
+    for line in manifest.splitlines():
+        if line.startswith('EBUILD'):
+            if m := ebuid_pattern.match(line):
+                package_ebuilds.append(m.group(1))
+    
+    # package_metadata =os.path.join(package_prefix, 'metadata.xml')
+    # metadata = requests.get(package_metadata).content.decode(errors='ignore')
+    # xml.parsers.expat.parse(metadata)
+    # p = xml.parsers.expat.ParserCreate()
+    # def start_element(name, attrs):
+        # if name
+    # p.StartElementHandler
+    
+    ebuildfile = st.selectbox('选择 ebuild 文件', options=package_ebuilds)
+    package_ebuild = os.path.join(package_prefix, ebuildfile)
+    ebuild = requests.get(package_ebuild).content.decode(errors='ignore')
+    with st.expander('内容', expanded=True):
+        st.code(ebuild, language='shell')
+   
+@st.cache_data(show_spinner=False)
+def cache_get(url):
+    return requests.get(url)
+    
+def portage_viewer_full():
+    st.title('portage 可视化工具 - 全量版')
+    
+    prefix_mirrors = [
+        'https://mirrors.bfsu.edu.cn/gentoo-portage'
+    ]
+    
+    prefix_mirror = st.sidebar.selectbox('选择源', options=prefix_mirrors)
+    Manifestfiles = os.path.join(prefix_mirror, 'Manifest.files.gz')
+    # requests.get(Manifestfiles).content
+    manifest_pattern = re.compile(r'MANIFEST ((\S+)/(\S+))')
+    ebuid_pattern = re.compile(r'EBUILD ((\S+))')
+    # Manifests = []
+    package_prefix_suffixs = []
+    prefix_packages = []
+    gzip_file = io.BytesIO(cache_get(Manifestfiles).content)
+    with gzip.GzipFile(fileobj=gzip_file, mode='r') as gzip_ref:
+        # zip_ref.extractall(os.path.join(prefix, 'portage'))
+        # with st.spinner('正在获取包信息...'):
+        with st.progress(0, '正在获取包信息...') as progress_bar:
+            lines = gzip_ref.readlines()
+            for i, line in enumerate(lines):
+                line = line.decode(errors='ignore')
+                if line.startswith('MANIFEST'):
+                    if m := manifest_pattern.match(line):
+                        prefix_packages.append(m.group(2))
+                        prefix_package = m.group(2)
+                        pr = int(i / len(lines) * 100)
+                        if pr > 100: pr = 100
+                        st.progress(pr, f'正在获取 {prefix_package} 的内容...')
+
+                        # prefix_package = st.selectbox('选择前缀', options=prefix_packages)
+                        prefix_package_manifest = os.path.join(prefix_mirror, prefix_package, 'Manifest.gz')
+                        gzip_file = io.BytesIO(cache_get(prefix_package_manifest).content)
+                        suffix_packages = []
+                        with gzip.GzipFile(fileobj=gzip_file, mode='r') as gzip_ref:
+                            for line in gzip_ref.readlines():
+                                line = line.decode(errors='ignore')
+                                if line.startswith('MANIFEST'):
+                                    if m := manifest_pattern.match(line):
+                                        suffix_packages.append(m.group(2))
+                                        suffix_package = m.group(2)
+
+                                        package_prefix_suffix = os.path.join(prefix_package, suffix_package)
+                                        package_prefix_suffixs.append(package_prefix_suffix)
+    
+    package_prefix_suffix = st.selectbox('选择包', options=package_prefix_suffixs)
+    package_prefix = os.path.join(prefix_mirror, package_prefix_suffix)
+    
+    package_manifest = os.path.join(package_prefix, 'Manifest')
+    manifest = requests.get(package_manifest).content.decode(errors='ignore')
+    package_ebuilds = []
+    for line in manifest.splitlines():
+        if line.startswith('EBUILD'):
+            if m := ebuid_pattern.match(line):
+                package_ebuilds.append(m.group(1))
+    
+    # package_metadata =os.path.join(package_prefix, 'metadata.xml')
+    # metadata = requests.get(package_metadata).content.decode(errors='ignore')
+    # xml.parsers.expat.parse(metadata)
+    # p = xml.parsers.expat.ParserCreate()
+    # def start_element(name, attrs):
+        # if name
+    # p.StartElementHandler
+    
+    ebuildfile = st.selectbox('选择 ebuild 文件', options=package_ebuilds)
+    package_ebuild = os.path.join(package_prefix, ebuildfile)
+    ebuild = requests.get(package_ebuild).content.decode(errors='ignore')
+    with st.expander('内容', expanded=True):
+        st.code(ebuild, language='shell')
 
 def gentoo_editor():
     st.title('gentoo 步骤可视化编辑器')
@@ -130,6 +281,8 @@ pages = {
     '可视化步骤': gentoo_editor,
     'gentoo构建编辑': gentoo_build_editor,
     'gentoo构建下载': gentoo_build_download,
+    'portage 可视化': portage_viewer,
+    'portage 可视化工具 - 全量版': portage_viewer_full
 }
 
 page = st.sidebar.selectbox('页面导航', options=pages.keys())
